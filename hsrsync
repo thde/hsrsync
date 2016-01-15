@@ -1,0 +1,98 @@
+#!/bin/bash
+########################################################################
+#
+# hsrsync
+#
+########################################################################
+
+########################################################################
+# folders
+DSTDIR="/Users/thde/Dropbox/HSR/Skripts"
+MNTDIR="/Volumes/hsrsync"
+SRCDIR="${MNTDIR}/Informatik/Fachbereich/Objektorientierte_Programmierung/OO \
+  ${MNTDIR}/Mathematik_Naturwissenschaften/Diskrete_Mathematik_fuer_Informatik_/DMI \
+  ${MNTDIR}/Informatik/Fachbereich/Datenbanksysteme_1/Dbs1"
+VPNTESTDOMAIN="skripte.hsr.ch"
+VPNHOST="vpn.hsr.ch"
+
+########################################################################
+# user input
+echo -n "User: "
+read USERNAME
+
+echo -n "Password: "
+read -s PASS
+
+echo ""
+
+########################################################################
+# vpn
+if [[ ! $(dig +short "${VPNTESTDOMAIN}" | head -1) == *"hsr.ch"* ]]
+then
+  echo "[ INFO ] not in hsr network"
+  sleep 2
+  echo -e "connect to vpn... "
+  echo "${PASS}" | sudo openconnect --passwd-on-stdin -u "${USERNAME}" "${VPNHOST}" > /dev/null &
+  sleep 5
+  if [[ $(dig +short "${VPNTESTDOMAIN}" | head -1) == *"hsr.ch"* ]]
+  then
+    echo "[ OK ]"
+  else
+    echo "[ ERROR ]"
+    echo "vpn connection error"
+    exit 1
+  fi
+fi
+
+
+########################################################################
+# preparation
+if ! [ -d "${MNTDIR}" ]
+then
+  echo -n "creating ${MNTDIR}... "
+  mkdir "${MNTDIR}"
+  echo "[ OK ]"
+fi
+
+if ! [ -d "${DSTDIR}" ]
+then
+  echo "[ ERROR ]"
+  echo "${DSTDIR} doesn't exist!"
+  exit 1
+fi
+
+########################################################################
+# mounting
+if ! mount | grep "on ${MNTDIR}" > /dev/null; then
+  echo -n "mounting hsr folder to ${MNTDIR}... "
+  mount_smbfs "//${USERNAME}:${PASS}@hsr.ch/root/alg/skripte" "${MNTDIR}"
+  if ! mount | grep "on ${MNTDIR}" > /dev/null; then
+    echo "[ ERROR ]"
+    echo "Error while mounting ${MNTDIR}!"
+    exit 1
+  else
+    echo "[ OK ]"
+  fi
+fi
+
+########################################################################
+# syncing files
+rsync -ahz --progress --delete --exclude "*.lnk" --exclude "Desktop.ini" \
+  --exclude "Thumbs.db" --exclude ".DS_Store" --exclude "CompB/HS_201[23]" \
+  ${SRCDIR} "${DSTDIR}"
+
+########################################################################
+# unmounting
+echo -n "unmounting ${MNTDIR}... "
+if umount ${MNTDIR} >/dev/null 2>&1
+then
+  echo "[ OK ]"
+  echo
+  if [[ $(dig +short "${VPNTESTDOMAIN}" | head -1) == *"hsr.ch"* ]]
+  then
+    echo "[ INFO ] ending vpn connection"
+    kill -SIGTERM %1
+  fi
+else
+  echo "[ ERROR ]"
+fi
