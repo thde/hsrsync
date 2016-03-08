@@ -6,12 +6,13 @@
 ########################################################################
 
 ########################################################################
-# folders
+# vars
 DSTDIR="/Users/thde/Dropbox/HSR/Skripts"
 MNTDIR="/Volumes/hsrsync"
-SRCDIR="${MNTDIR}/Informatik/Fachbereich/Objektorientierte_Programmierung/OO \
-  ${MNTDIR}/Mathematik_Naturwissenschaften/Diskrete_Mathematik_fuer_Informatik_/DMI \
-  ${MNTDIR}/Informatik/Fachbereich/Datenbanksysteme_1/Dbs1"
+SRCDIR="${MNTDIR}/Informatik/Fachbereich/Algorithmen_und_Datenstrukturen_1/AD1 \
+  ${MNTDIR}/Mathematik_Naturwissenschaften/Analysis_2_fuer_Informatiker/An2I \
+  ${MNTDIR}/Mathematik_Naturwissenschaften/Automaten_und_Sprachen/AutoSpr \
+  ${MNTDIR}/Informatik/Fachbereich/Experimentieren_und_Evaluieren_fuer_Informatik/ExEv"
 VPNTESTDOMAIN="skripte.hsr.ch"
 VPNHOST="vpn.hsr.ch"
 
@@ -27,6 +28,7 @@ echo ""
 
 ########################################################################
 # vpn
+
 if [[ ! $(dig +short "${VPNTESTDOMAIN}" | head -1) == *"hsr.ch"* ]]
 then
   echo "[ INFO ] not in hsr network"
@@ -36,6 +38,7 @@ then
   sleep 5
   if [[ $(dig +short "${VPNTESTDOMAIN}" | head -1) == *"hsr.ch"* ]]
   then
+    VPN_USAGE=true
     echo "[ OK ]"
   else
     echo "[ ERROR ]"
@@ -47,6 +50,7 @@ fi
 
 ########################################################################
 # preparation
+
 if ! [ -d "${MNTDIR}" ]
 then
   echo -n "creating ${MNTDIR}... "
@@ -63,6 +67,7 @@ fi
 
 ########################################################################
 # mounting
+
 if ! mount | grep "on ${MNTDIR}" > /dev/null; then
   echo -n "mounting hsr folder to ${MNTDIR}... "
   mount_smbfs "//${USERNAME}:${PASS}@hsr.ch/root/alg/skripte" "${MNTDIR}"
@@ -77,22 +82,29 @@ fi
 
 ########################################################################
 # syncing files
+
 rsync -ahz --progress --delete --exclude "*.lnk" --exclude "Desktop.ini" \
   --exclude "Thumbs.db" --exclude ".DS_Store" --exclude "CompB/HS_201[23]" \
   ${SRCDIR} "${DSTDIR}"
 
 ########################################################################
 # unmounting
+
 echo -n "unmounting ${MNTDIR}... "
 if umount ${MNTDIR} >/dev/null 2>&1
 then
   echo "[ OK ]"
   echo
-  if [[ $(dig +short "${VPNTESTDOMAIN}" | head -1) == *"hsr.ch"* ]]
-  then
+  if [ "$VPN_USAGE" = true ]; then
     echo "[ INFO ] ending vpn connection"
     kill -SIGTERM %1
   fi
 else
   echo "[ ERROR ]"
 fi
+
+########################################################################
+# final output
+
+echo total size:
+du -hs "${DSTDIR}"
