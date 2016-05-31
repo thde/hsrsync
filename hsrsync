@@ -87,13 +87,13 @@ fi
 
 rsync -ahz --progress --delete --exclude "*.lnk" --exclude "Desktop.ini" \
   --exclude "Thumbs.db" --exclude ".DS_Store" --exclude "CompB/HS_201[23]" \
-  "${SRCDIR}" "${DSTDIR}"
+  ${SRCDIR} "${DSTDIR}"
 
 ########################################################################
 # unmounting
 
 echo -n "unmounting ${MNTDIR}... "
-if umount "${MNTDIR}" >/dev/null 2>&1
+if umount ${MNTDIR} >/dev/null 2>&1
 then
   echo "[ OK ]"
   echo
