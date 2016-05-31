@@ -87,19 +87,19 @@ fi
 
 rsync -ahz --progress --delete --exclude "*.lnk" --exclude "Desktop.ini" \
   --exclude "Thumbs.db" --exclude ".DS_Store" --exclude "CompB/HS_201[23]" \
-  ${SRCDIR} "${DSTDIR}"
+  "${SRCDIR}" "${DSTDIR}"
 
 ########################################################################
 # unmounting
 
 echo -n "unmounting ${MNTDIR}... "
-if umount ${MNTDIR} >/dev/null 2>&1
+if umount "${MNTDIR}" >/dev/null 2>&1
 then
   echo "[ OK ]"
   echo
   if [ "$VPN_USAGE" = true ]; then
     echo "[ INFO ] ending vpn connection"
-    kill -SIGTERM %1
+    sudo kill -SIGTERM %1
   fi
 else
   echo "[ ERROR ]"
