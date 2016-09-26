@@ -8,12 +8,14 @@
 ########################################################################
 # vars
 
-DSTDIR="/Users/thde/Dropbox/HSR/Skripts"
-MNTDIR="/Volumes/hsrsync"
-SRCDIR="${MNTDIR}/Informatik/Fachbereich/Algorithmen_und_Datenstrukturen_1/AD1 \
-  ${MNTDIR}/Mathematik_Naturwissenschaften/Analysis_2_fuer_Informatiker/An2I \
-  ${MNTDIR}/Mathematik_Naturwissenschaften/Automaten_und_Sprachen/AutoSpr \
-  ${MNTDIR}/Informatik/Fachbereich/Experimentieren_und_Evaluieren_fuer_Informatik/ExEv"
+DSTDIR="${HOME}/Dropbox/HSR/var/skripts"
+MNTDIR="${HOME}/.hsrsync"
+SRCDIR="${MNTDIR}/Informatik/Fachbereich/Algorithmen_und_Datenstrukturen_2/AD2 \
+  ${MNTDIR}/Informatik/Fachbereich/Informations-_und_Codierungstheorie/ICTh \
+  ${MNTDIR}/Informatik/Fachbereich/Computernetze_1/CN1 \
+  ${MNTDIR}/Informatik/Fachbereich/Computernetze_1/CN1Prak \
+  ${MNTDIR}/Informatik/Fachbereich/Software-Engineering_1/SE1 \
+  ${MNTDIR}/Informatik/Fachbereich/C++/CPl"
 VPNTESTDOMAIN="skripte.hsr.ch"
 VPNHOST="vpn.hsr.ch"
 
@@ -85,8 +87,13 @@ fi
 ########################################################################
 # syncing files
 
-rsync -ahz --progress --delete --exclude "*.lnk" --exclude "Desktop.ini" \
-  --exclude "Thumbs.db" --exclude ".DS_Store" --exclude "CompB/HS_201[23]" \
+rsync -ahz --progress --delete \
+  --exclude "*.lnk" \
+  --exclude "Desktop.ini" \
+  --exclude "Thumbs.db" \
+  --exclude ".DS_Store" \
+  --exclude "CompB/HS_201[23]" \
+  --exclude "ICTh/Unterlagen 2014/Videos*" \
   ${SRCDIR} "${DSTDIR}"
 
 ########################################################################
@@ -96,6 +103,7 @@ echo -n "unmounting ${MNTDIR}... "
 if umount "${MNTDIR}" >/dev/null 2>&1
 then
   echo "[ OK ]"
+  rmdir "${MNTDIR}"
   echo
   if [ "$VPN_USAGE" = true ]; then
     echo "[ INFO ] ending vpn connection"
